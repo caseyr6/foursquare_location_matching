@@ -1,0 +1,290 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "347de406",
+   "metadata": {},
+   "source": [
+    "# fuzzymatching"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "9525a1c3",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import fuzzymatcher\n",
+    "import pandas as pd \n",
+    "from pathlib import Path\n",
+    "import re\n",
+    "import numpy as np\n",
+    "import math"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "id": "3f17dd5f",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "RangeIndex: 1138813 entries, 0 to 1138812\n",
+      "Data columns (total 13 columns):\n",
+      " #   Column             Non-Null Count    Dtype  \n",
+      "---  ------             --------------    -----  \n",
+      " 0   id                 1138813 non-null  object \n",
+      " 1   name               1138812 non-null  object \n",
+      " 2   latitude           1138813 non-null  float64\n",
+      " 3   longitude          1138813 non-null  float64\n",
+      " 4   address            742191 non-null   object \n",
+      " 5   city               839623 non-null   object \n",
+      " 6   state              718226 non-null   object \n",
+      " 7   zip                543386 non-null   object \n",
+      " 8   country            1138802 non-null  object \n",
+      " 9   url                267724 non-null   object \n",
+      " 10  phone              342855 non-null   object \n",
+      " 11  categories         1040506 non-null  object \n",
+      " 12  point_of_interest  1138813 non-null  object \n",
+      "dtypes: float64(2), object(11)\n",
+      "memory usage: 113.0+ MB\n",
+      "None\n"
+     ]
+    }
+   ],
+   "source": [
+    "#data prep\n",
+    "\n",
+    "pairs = pd.read_csv('raw_data/pairs.csv',index_col = False)\n",
+    "s_s = pd.read_csv('raw_data/sample_submission.csv',index_col = False)\n",
+    "test = pd.read_csv('raw_data/test.csv',index_col = False)\n",
+    "train = pd.read_csv('raw_data/train.csv',index_col = False)\n",
+    "\n",
+    "#print(pairs.head())\n",
+    "print(train.info())\n",
+    "#print(train.head())\n",
+    "\n",
+    "\n",
+    "\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "6f1884f2",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#some useful formatting \n",
+    "#.str.normalize('NFKD')\n",
+    "#.drop_duplicates(subset=['column_name'])\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "id": "1d1d2059",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#sample dataset for testing\n",
+    "sub_df = train.head(10)\n",
+    "full_df = train.head(100)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "id": "7fe2f4f9",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "           __id_left        __id_right  match_score  match_rank  \\\n",
+      "0   E_000001272c6c5d  E_000001272c6c5d     0.473550           1   \n",
+      "1   E_000002eae2a589  E_000002eae2a589     0.326303           1   \n",
+      "2   E_000007f24ebc95  E_000007f24ebc95     0.237095           1   \n",
+      "3   E_000008a8ba4f48  E_000008a8ba4f48     0.163151           1   \n",
+      "4   E_00001d92066153  E_00001d92066153     0.463515           1   \n",
+      "5   E_000023d8f4be44  E_000023d8f4be44     0.326303           1   \n",
+      "6   E_00002a131a2bf6  E_00002a131a2bf6     0.479419           1   \n",
+      "7   E_00002a131a2bf6  E_00002a131a2bf6     0.479419           1   \n",
+      "8   E_00002a131a2bf6  E_00002a131a2bf6     0.479419           1   \n",
+      "9   E_00002a131a2bf6  E_00002a131a2bf6     0.479419           1   \n",
+      "10  E_0000764d65557e  E_0000764d65557e     0.279705           1   \n",
+      "11  E_00007dcd2bb53f  E_00007dcd2bb53f     0.513596           1   \n",
+      "\n",
+      "                  name_left               name_right  \n",
+      "0      Café Stad Oudenaarde     Café Stad Oudenaarde  \n",
+      "1            Carioca Manero           Carioca Manero  \n",
+      "2          ร้านตัดผมการาเกด         ร้านตัดผมการาเกด  \n",
+      "3                  Turkcell                 Turkcell  \n",
+      "4   Restaurante Casa Cofiño  Restaurante Casa Cofiño  \n",
+      "5                Island Spa               Island Spa  \n",
+      "6         ministry of youth        ministry of youth  \n",
+      "7         ministry of youth        minietry of yourh  \n",
+      "8         minietry of yourh        ministry of youth  \n",
+      "9         minietry of yourh        minietry of yourh  \n",
+      "10               McDonald's               McDonald's  \n",
+      "11        TOGO'S Sandwiches        TOGO'S Sandwiches  \n"
+     ]
+    }
+   ],
+   "source": [
+    "#matching process\n",
+    "#issue with fuzzymatcher is that it only joins one - \n",
+    "#so how best to manage that? without re-running it multiple times?\n",
+    "# use 'link_table' instead of the fuzzy_left_join\n",
+    "# can set threshold using match_score > chosen_threshold\n",
+    "\n",
+    "# Columns to match on from df_left\n",
+    "left_on = [\"name\"]\n",
+    "\n",
+    "# Columns to match on from df_right\n",
+    "right_on = [\"name\"]\n",
+    "\n",
+    "# Note that if left_id_col or right_id_col are admitted a unique id will be autogenerated\n",
+    "output = fuzzymatcher.link_table(sub_df, full_df, left_on, right_on, left_id_col = \"id\", right_id_col = \"id\")\n",
+    "\n",
+    "print(output)\n",
+    "\n",
+    "\n",
+    "#output = fuzzymatcher.fuzzy_left_join(sub_df, full_df, left_on=\"column_name\",right_on = \"column_name\")\n",
+    "\n",
+    "#output.to_excel(\"output_v1.0.xlsx\")\n",
+    "\n",
+    "#print(\"matches complete\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "b340a041",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "8f40d610",
+   "metadata": {},
+   "source": [
+    "# Distance between points"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "id": "166a7d3c",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import geopy.distance"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "id": "ee0f4d68",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "                 id                  name   latitude  longitude      address  \\\n",
+      "0  E_000001272c6c5d  Café Stad Oudenaarde  50.859975   3.634196  Abdijstraat   \n",
+      "\n",
+      "         city            state   zip country  url phone categories  \\\n",
+      "0  Nederename  Oost-Vlaanderen  9700      BE  NaN   NaN       Bars   \n",
+      "\n",
+      "  point_of_interest  \n",
+      "0  P_677e840bb6fc7e  \n"
+     ]
+    }
+   ],
+   "source": [
+    "print(train.head(1))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "id": "7c3379e0",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "(50.85997533509319, 3.6341963487748346)\n",
+      "(-22.907225306597013, -43.17824390023254)\n"
+     ]
+    }
+   ],
+   "source": [
+    "geo_df = train.head(2)\n",
+    "coord_1 = (geo_df.loc[0,'latitude'],geo_df.loc[0,'longitude'])\n",
+    "print(coord_1)\n",
+    "coord_2 = (geo_df.loc[1,'latitude'],geo_df.loc[1,'longitude'])\n",
+    "print(coord_2)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "id": "527f92c6",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "distance between point:  9370.64505095926\n"
+     ]
+    }
+   ],
+   "source": [
+    "print('distance between point: ',geopy.distance.geodesic(coord_1,coord_2).km)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "b3c205a7",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.12"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
