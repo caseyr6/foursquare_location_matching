@@ -18,10 +18,11 @@ import utils
 variables required for process defined here
 '''
 
-file_path = r'C:\Users\caseyrya\Dropbox\foursquare_location_matching_data'
+root_file_path = r'C:\Users\caseyrya\Dropbox\foursquare_location_matching_data'
 log_file_location = 'process_logs'
 log_file_name = 'location_matching.log'
-data_location = 'data'
+data_location = 'data\model_testing'
+data_file_name = 'test_raw.csv'
 
 
 
@@ -33,7 +34,7 @@ configure the script logger
 '''
 
 # define log file path
-log_file_path = os.path.join(file_path, log_file_location, log_file_name)
+log_file_path = os.path.join(root_file_path, log_file_location, log_file_name)
 
 # Set log file configuration
 logging.basicConfig(
@@ -67,7 +68,7 @@ read train.csv file from dropbox
 
 logger.info('READING DATA')
 try:
-    df = pd.read_csv(os.path.join(file_path, data_location, 'train.csv'))
+    df = pd.read_csv(os.path.join(root_file_path, data_location, data_file_name))
     logger.info('data read')
 except Exception as e:
     logger.exception('data read failed: {}'.format(e))
@@ -88,7 +89,6 @@ perform basic cleaning operations on the train data set
 logger.info('CLEANING DATA')
 try:
     df = clean_data.clean_data(df)
-    df.to_csv(os.path.join(file_path, data_location, 'train_clean.csv')) # temp
     logger.info('data cleaned')
 except Exception as e:
     logger.exception('data cleaning failed: {}'.format(e))
@@ -109,7 +109,6 @@ generate the required pairs dataset
 logger.info('GENERATE PAIRS DATA')
 try:
     df = generate_pairs.generate_pairs(df)
-    df.to_csv(os.path.join(file_path, data_location, 'pairs.csv')) # temp
     logger.info('pairs data generated')
 except Exception as e:
     logger.exception('pairs data generation failed: {}'.format(e))
@@ -117,6 +116,30 @@ except Exception as e:
     raise SystemExit('Error: {}'.format(e))
     
 logger.info('PAIRS DATA SUCCESSFULLY GENERATED\n') 
+
+
+
+#########################
+# generate modelling data
+#########################
+'''
+generate the required modelling data set
+'''
+
+
+
+############################
+# evaluate model performance
+############################
+'''
+generate model predictions and evaluate performance
+'''
+
+# import the model
+
+# generate the predictions
+
+# extract the standard, and comp specific results (add these to log file)
 
 
 
