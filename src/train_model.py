@@ -10,6 +10,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 # import custom modules
 import clean_data
 import generate_pairs
+import build_features
 
 
 
@@ -50,6 +51,8 @@ val_df = generate_pairs.generate_pairs(val_df)
 ###########################
 '''add code here once build_features module is completed'''
 
+train_df = build_features.build_features(train_df)
+val_df = build_features.build_features(val_df)
 
 
 #######################
