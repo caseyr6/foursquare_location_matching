@@ -1,12 +1,12 @@
 import pandas as pd
+import joblib
 import logging
 from pathlib import Path
 import os
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # import functions from modules
-import clean_data
-import generate_pairs
+import clean_data, generate_pairs, build_features, evaluate_model
 import utils
 
 
@@ -23,6 +23,14 @@ log_file_location = 'process_logs'
 log_file_name = 'location_matching.log'
 data_location = 'data\model_testing'
 data_file_name = 'test_raw.csv'
+
+parent_path = str(Path(__file__).parent).replace('src','')
+model_dir = 'models'
+model_name = 'xgb_classifier_full_train.sav'
+model_path = os.path.join(parent_path, model_dir, model_name)
+
+# needed because model is too large to push to git (above approach is actually correct though)
+model_path = r'C:\Users\caseyrya\Dropbox\foursquare_location_matching_data\models\xgb_classifier_full_train.sav'
 
 
 
@@ -126,6 +134,17 @@ logger.info('PAIRS DATA SUCCESSFULLY GENERATED\n')
 generate the required modelling data set
 '''
 
+logger.info('GENERATE MODELLING DATA')
+try:
+    df = build_features.build_features(df)
+    logger.info('pairs data generated')
+except Exception as e:
+    logger.exception('generate modelling data failed: {}'.format(e))
+    logging.shutdown()
+    raise SystemExit('Error: {}'.format(e))
+    
+logger.info('MODELLING DATA SUCCESSFULLY GENERATED\n') 
+
 
 
 ############################
@@ -135,11 +154,28 @@ generate the required modelling data set
 generate model predictions and evaluate performance
 '''
 
-# import the model
+logger.info('EVALUATE MODEL PERFORMANCE')
+try:
+    # load the model
+    model = joblib.load(Path(model_path))
 
-# generate the predictions
+    # apply model evaluation function
+    model_acc, model_prec, model_rec, model_f1, model_auc_pr, model_roc_auc, model_comp_score = evaluate_model.evaluate_model(df, model)
 
-# extract the standard, and comp specific results (add these to log file)
+    logger.info('model evaluated')
+    logger.info(f'model accuracy: {model_acc}')
+    logger.info(f'model precision: {model_prec}')
+    logger.info(f'model recall: {model_rec}')
+    logger.info(f'model f1-score: {model_f1}')
+    logger.info(f'model AUC PR: {model_auc_pr}')
+    logger.info(f'model AUC ROC: {model_roc_auc}')
+    logger.info(f'model competition score: {model_comp_score}')
+except Exception as e:
+    logger.exception('model evaluation failed: {}'.format(e))
+    logging.shutdown()
+    raise SystemExit('Error: {}'.format(e))
+    
+logger.info('MODEL SUCCESSFULLY EVALUATED\n') 
 
 
 
@@ -151,15 +187,3 @@ end script
 '''
 
 logger.info('--------------- FINISHED -----------------\n\n\n')
-
-
-
-
-
-
-
-
-
-
-
-

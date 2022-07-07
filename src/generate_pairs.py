@@ -4,7 +4,7 @@ from sklearn.preprocessing import StandardScaler
 
 def generate_pairs(
     df,
-    n_neighbors = 6,
+    n_neighbors = 1,
     train = True
 ):
     '''
